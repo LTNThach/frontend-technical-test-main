@@ -30,6 +30,7 @@ import { Loader } from '../../components/loader';
 import { MemePicture } from '../../components/meme-picture';
 import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import { Controller, useForm } from 'react-hook-form';
 
 type CommentWithAuthor = GetMemeCommentsResponse['results'][0] & {
   author: GetUserByIdResponse;
@@ -98,9 +99,13 @@ export const MemeFeedPage: React.FC = () => {
   const [openedCommentSection, setOpenedCommentSection] = useState<
     string | null
   >(null);
-  const [commentContent, setCommentContent] = useState<{
-    [key: string]: string;
-  }>({});
+  const { control, resetField, handleSubmit } = useForm<{
+    commentContent: Record<string, string>;
+  }>({
+    defaultValues: {
+      commentContent: {},
+    },
+  });
 
   const {
     data: commentsData,
@@ -259,15 +264,29 @@ export const MemeFeedPage: React.FC = () => {
               <Collapse in={openedCommentSection === meme.id} animateOpacity>
                 <Box mb={6}>
                   <form
-                    onSubmit={(event) => {
-                      event.preventDefault();
-                      if (commentContent[meme.id]) {
-                        mutate({
+                    onSubmit={handleSubmit(async (data) => {
+                      if (data.commentContent[meme.id]) {
+                        await mutateAsync({
                           memeId: meme.id,
-                          content: commentContent[meme.id],
+                          content: data.commentContent[meme.id],
+                        });
+                        refetchComments();
+
+                        resetField(`commentContent.${meme.id}`, {
+                          defaultValue: '',
+                        });
+                        setMemes((prevMemes) => {
+                          const newMemes = [...prevMemes];
+
+                          newMemes[memeIdx] = {
+                            ...newMemes[memeIdx],
+                            commentsCount: newMemes[memeIdx].commentsCount + 1,
+                          };
+
+                          return newMemes;
                         });
                       }
-                    }}
+                    })}
                   >
                     <Flex alignItems="center">
                       <Avatar
@@ -278,15 +297,15 @@ export const MemeFeedPage: React.FC = () => {
                         size="sm"
                         mr={2}
                       />
-                      <Input
-                        placeholder="Type your comment here..."
-                        onChange={(event) => {
-                          setCommentContent({
-                            ...commentContent,
-                            [meme.id]: event.target.value,
-                          });
-                        }}
-                        value={commentContent[meme.id]}
+                      <Controller
+                        name={`commentContent.${meme.id}`}
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            placeholder="Type your comment here..."
+                          />
+                        )}
                       />
                     </Flex>
                   </form>
