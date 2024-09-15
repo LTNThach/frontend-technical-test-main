@@ -75,13 +75,68 @@ declare module '@tanstack/react-router' {
 
 // Create and export the route tree
 
-export const routeTree = rootRoute.addChildren({
-  AuthenticationRoute: AuthenticationRoute.addChildren({
-    AuthenticationCreateRoute,
-    AuthenticationIndexRoute,
-  }),
-  LoginRoute,
-})
+interface AuthenticationRouteChildren {
+  AuthenticationCreateRoute: typeof AuthenticationCreateRoute
+  AuthenticationIndexRoute: typeof AuthenticationIndexRoute
+}
+
+const AuthenticationRouteChildren: AuthenticationRouteChildren = {
+  AuthenticationCreateRoute: AuthenticationCreateRoute,
+  AuthenticationIndexRoute: AuthenticationIndexRoute,
+}
+
+const AuthenticationRouteWithChildren = AuthenticationRoute._addFileChildren(
+  AuthenticationRouteChildren,
+)
+
+export interface FileRoutesByFullPath {
+  '': typeof AuthenticationRouteWithChildren
+  '/login': typeof LoginRoute
+  '/create': typeof AuthenticationCreateRoute
+  '/': typeof AuthenticationIndexRoute
+}
+
+export interface FileRoutesByTo {
+  '/login': typeof LoginRoute
+  '/create': typeof AuthenticationCreateRoute
+  '/': typeof AuthenticationIndexRoute
+}
+
+export interface FileRoutesById {
+  __root__: typeof rootRoute
+  '/_authentication': typeof AuthenticationRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_authentication/create': typeof AuthenticationCreateRoute
+  '/_authentication/': typeof AuthenticationIndexRoute
+}
+
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '' | '/login' | '/create' | '/'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/login' | '/create' | '/'
+  id:
+    | '__root__'
+    | '/_authentication'
+    | '/login'
+    | '/_authentication/create'
+    | '/_authentication/'
+  fileRoutesById: FileRoutesById
+}
+
+export interface RootRouteChildren {
+  AuthenticationRoute: typeof AuthenticationRouteWithChildren
+  LoginRoute: typeof LoginRoute
+}
+
+const rootRouteChildren: RootRouteChildren = {
+  AuthenticationRoute: AuthenticationRouteWithChildren,
+  LoginRoute: LoginRoute,
+}
+
+export const routeTree = rootRoute
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
 
 /* prettier-ignore-end */
 

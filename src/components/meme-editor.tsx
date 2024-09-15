@@ -1,11 +1,11 @@
 import { useDropzone } from "react-dropzone";
-import { MemePicture, MemePictureProps } from "./meme-picture";
 import { AspectRatio, Box, Button, Flex, Icon, Text } from "@chakra-ui/react";
 import { Image, Pencil } from "@phosphor-icons/react";
+import { MemePictureEditor, MemePictureEditorProps } from "./meme-picture-editor";
 
 export type MemeEditorProps = {
   onDrop: (file: File) => void;
-  memePicture?: MemePictureProps;
+  memePicture?: MemePictureEditorProps;
 };
 
 function renderNoPicture() {
@@ -26,7 +26,7 @@ function renderNoPicture() {
   );
 }
 
-function renderMemePicture(memePicture: MemePictureProps, open: () => void) {
+function renderMemePicture(memePicture: MemePictureEditorProps, open: () => void) {
   return (
     <Box width="full" height="full" position="relative" __css={{
       "&:hover .change-picture-button": {
@@ -36,7 +36,7 @@ function renderMemePicture(memePicture: MemePictureProps, open: () => void) {
         display: "none",
       },
     }}>
-      <MemePicture {...memePicture} />
+      <MemePictureEditor {...memePicture} />
       <Button
         className="change-picture-button"
         leftIcon={<Icon as={Pencil} boxSize={4} />}
